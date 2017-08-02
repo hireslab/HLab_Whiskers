@@ -314,6 +314,8 @@ else
                 prompt = {'Window size of spike integration (s)', 'Estimated synaptic delay between spikes and whiskers (s)'};
                 dlg_title = 'Spike Rate Parameters';
                 num_lines = 1;
+                %'params.spikeRateWindow' seems to be defined in 'filterfamily.m' based on 
+                % a variable names windowSpan which equals 0.005 -PSM  170802
                 def = {num2str(params.spikeRateWindow), num2str(params.spikeSynapticOffset)};
                 spikeParams = inputdlg(prompt,dlg_title,num_lines,def);
                 params.spikeRateWindow=str2num(spikeParams{1});
@@ -423,7 +425,8 @@ else
                 end
                 if  isfield(get(findobj('Tag','t_d')),'BrushData');
                     brushedData = find(get(findobj('Tag','t_d'),'BrushData'));
-                    toPlay = round(array.trials{params.sweepNum}.whiskerTrial.time{1}(brushedData)*1000)+1;
+                    fr = round(1/array.trials{params.sweepNum}.whiskerTrial.framePeriodInSec);
+                    toPlay = round(array.trials{params.sweepNum}.whiskerTrial.time{1}(brushedData)*fr)+1;
                     loadWhiskerVideo(array.trialNums(params.sweepNum), toPlay, videoDir);
                     params = getappdata(hParamBrowserGui,'params');
                     contacts = getappdata(hParamBrowserGui,'contacts');
@@ -781,28 +784,30 @@ hParamBrowserGui = getappdata(0,'hParamBrowserGui');
 
 obj = getappdata(hParamBrowserGui);
 contactTimes = obj.array.trials{obj.params.sweepNum}.whiskerTrial.time{1}(obj.contacts{obj.params.sweepNum}.contactInds{1});
+fr = round(1/obj.array.trials{obj.params.sweepNum}.whiskerTrial.framePeriodInSec);
 
 
 % d = dir([videoDir filesep '*.mp4']);
 % find_video = strfind([d(:).name], ['_' sprintf('%04d',videoNum) '_']);
 % video_idx = ceil(find_video/length(d(1).name));
 % bar = load([videoDir filesep d(video_idx).name(1:end-4) '.bar']);
- bar = load([videoDir filesep  '.bar']);
-
+ bar = load([videoDir filesep  obj.array.trials{obj.params.sweepNum}.whiskerTrial.trackerFileName '.bar']);
 if isempty(toPlay)
-    video = mmread([videoDir filesep d(video_idx).name]);
+%     video = mmread([videoDir filesep d(video_idx).name]);
+     video = mmread([videoDir filesepobj.array.trials{obj.params.sweepNum}.whiskerTrial.trackerFileName '.mp4']);
+
     barSelected = bar(:,2:3,:)
     
 else
     
-    video = mmread([videoDir filesep d(video_idx).name],toPlay);
+    video = mmread([videoDir filesep obj.array.trials{obj.params.sweepNum}.whiskerTrial.trackerFileName '.mp4'],toPlay);
     barSelected = bar(toPlay,2:3,:);
     
 end
 
-poleWindow = [-30:30];
+poleWindow = [-50:50];
 video.isContact = zeros(length(toPlay),1)
-[~,brushedContactIdx,~] = intersect(toPlay, round(contactTimes*1000)+1);
+[~,brushedContactIdx,~] = intersect(toPlay, round(contactTimes*fr)+1);
 video.isContact(brushedContactIdx) = 1;
 
 
@@ -816,7 +821,7 @@ colormap(gray(256));
 h_cropimg = image(poleCropVideoCat);
 axis off
 for i = 1:length(toPlay)
-    text(length(poleWindow)*(i-1),5,num2str((toPlay(i)-1)/1000),'color','y','fontsize',8)
+    text(length(poleWindow)*(i-1),5,num2str((toPlay(i)-1)/fr),'color','y','fontsize',8)
 end
 text(0,-2,'Left click to add contact, Right click delete, Enter to save','color','y')
 
@@ -824,7 +829,7 @@ subplot(2,1,2)
 h_diffimg = imagesc(poleCropVideoSub);
 axis off
 for i = 1:length(toPlay)
-    text(length(poleWindow)*(i-1),5,num2str((toPlay(i)-1)/1000),'color','y','fontsize',8)
+    text(length(poleWindow)*(i-1),5,num2str((toPlay(i)-1)/fr),'color','y','fontsize',8)
 end
 text(0,-10,'Contact','color','k')
 text(0,-5,'No Contact','color','w')
@@ -842,8 +847,8 @@ toDelSubIdx = toDelSubIdx(toDelSubIdx > 0 & toDelSubIdx <= length(toPlay));
 toAddTimes = toPlay(toAddSubIdx);
 toDelTimes = toPlay(toDelSubIdx);
 
-[~, toAddIdx,~] = intersect(round(obj.array.trials{obj.params.sweepNum}.whiskerTrial.time{1}*1000)+1,toAddTimes);
-[~, toDelIdx,~] = intersect(round(obj.array.trials{obj.params.sweepNum}.whiskerTrial.time{1}*1000)+1,toDelTimes);
+[~, toAddIdx,~] = intersect(round(obj.array.trials{obj.params.sweepNum}.whiskerTrial.time{1}*fr)+1,toAddTimes);
+[~, toDelIdx,~] = intersect(round(obj.array.trials{obj.params.sweepNum}.whiskerTrial.time{1}*fr)+1,toDelTimes);
 
 toAddIdx = toAddIdx';
 toDelIdx = toDelIdx';
@@ -873,7 +878,7 @@ subplot(2,1,1)
 h_cropimg = image(poleCropVideoCat);
 axis off
 for i = 1:length(toPlay)
-    text(length(poleWindow)*(i-1),5,num2str((toPlay(i)-1)/1000),'color','y','fontsize',8)
+    text(length(poleWindow)*(i-1),5,num2str((toPlay(i)-1)/fr),'color','y','fontsize',8)
 end
 
 
@@ -881,7 +886,7 @@ setappdata(h_videofig,'h_cropimg',h_cropimg)
 setappdata(h_videofig,'h_diffimg',h_diffimg)
 
 ap5 = getappdata(h_videofig)
-
+close(h_videofig)
 figure(hParamBrowserGui);
 end
 
