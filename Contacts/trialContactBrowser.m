@@ -89,7 +89,8 @@ if nargin <4
     
     
     % Setup Figure and handles
-    hParamBrowserGui = figure('Color','white'); ht = uitoolbar(hParamBrowserGui);
+    hParamBrowserGui = figure('Color','white'); 
+    ht = uitoolbar(hParamBrowserGui);
     setappdata(0,'hParamBrowserGui',gcf);
     hParamBrowserGui = getappdata(0,'hParamBrowserGui');
     h_b=brush(hParamBrowserGui);
@@ -120,7 +121,7 @@ if nargin <4
     
     floatToggle = uitoggletool(ht,'CData',icon_floatOff, 'TooltipString', 'Toggle PreContact Baseline Correction');
     zoomToggle  = uitoggletool(ht, 'CData',icon_zoomOut,   'TooltipString', 'Toggle Zoom Level');
-    vbutton = uipushtool(ht, 'CData',icon_video,   'TooltipString', 'Toggle Zoom Level');
+    vbutton = uipushtool(ht, 'CData',icon_video,   'TooltipString', 'View video frames');
     
     
     
@@ -900,7 +901,7 @@ function [poleCropVideoCat poleCropVideoSub] = buildPoleCropVideos(video,barSele
 poleCropVideo = zeros(length(poleWindow),length(poleWindow),length(barSelected));
 poleCropVideoCat = [];
 poleCropVideoSub = [];
-
+ 
 if size(video.frames(1).cdata,2) <  max(barSelected(1,1)+poleWindow) || size(video.frames(1).cdata,1) < max(barSelected(1,2)+poleWindow);
    poleWindow = poleWindow - max([max(barSelected(1,1)+poleWindow)-size(video.frames(1).cdata,2)  max(barSelected(1,2)+poleWindow)-size(video.frames(1).cdata,1)]);
 end
