@@ -281,7 +281,6 @@ else
             case 'save'
                 assignin('base','contacts',contacts);
                 assignin('base','params',params);
-                directoryname = uigetdir;
                 if isfield(params, 'contactSaveDir')
                     directoryname = uigetdir(params.contactSaveDir);
                 else
