@@ -891,8 +891,7 @@ setappdata(h_videofig,'h_cropimg',h_cropimg)
 setappdata(h_videofig,'h_diffimg',h_diffimg)
 
 ap5 = getappdata(h_videofig)
-pause(.1);
-close(h_videofig);
+
 figure(hParamBrowserGui);
 end
 
