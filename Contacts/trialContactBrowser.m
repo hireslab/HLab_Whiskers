@@ -282,6 +282,14 @@ else
                 assignin('base','contacts',contacts);
                 assignin('base','params',params);
                 directoryname = uigetdir;
+                if isfield(params, 'contactSaveDir')
+                    directoryname = uigetdir(params.contactSaveDir);
+                else
+                    directoryname = uigetdir;
+                end
+                if directoryname~= 0;
+                    params.contactSaveDir = directoryname;
+                end
                 %  save(['Z:\users\Karel\_DATA\S1_singleunit\ConTA\ConTA_' array.mouseName '_' array.sessionName], 'contacts', 'params')
                 % save(['/Volumes/svoboda/users/Andrew/Whisker Project/SingleUnit/ConTA/ConTA_' array.mouseName '_' array.sessionName], 'contacts', 'params')
                 save([directoryname '/ConTA_' array.mouseName '_' array.sessionName], 'contacts', 'params')
@@ -884,7 +892,6 @@ setappdata(h_videofig,'h_cropimg',h_cropimg)
 setappdata(h_videofig,'h_diffimg',h_diffimg)
 
 ap5 = getappdata(h_videofig)
-
 pause(.1);
 close(h_videofig);
 figure(hParamBrowserGui);
