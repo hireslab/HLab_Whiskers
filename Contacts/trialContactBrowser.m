@@ -291,7 +291,7 @@ else
                 end
                 %  save(['Z:\users\Karel\_DATA\S1_singleunit\ConTA\ConTA_' array.mouseName '_' array.sessionName], 'contacts', 'params')
                 % save(['/Volumes/svoboda/users/Andrew/Whisker Project/SingleUnit/ConTA/ConTA_' array.mouseName '_' array.sessionName], 'contacts', 'params')
-                save([directoryname '/ConTA_' array.mouseName '_' array.sessionName], 'contacts', 'params')
+                save([directoryname '/ConTA_' array.mouseName '_' array.sessionName '_' array.cellNum '_' array.cellCode], 'contacts', 'params')
                 display('Saved Contacts and Parameters')
                 
             case 'jumpToSweep'
