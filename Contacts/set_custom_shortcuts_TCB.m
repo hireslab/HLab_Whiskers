@@ -1,23 +1,12 @@
 %% set custom shortcuts for trial contact browser
-%{
-We need to set the params shortcut info to the real params file which is
-inside the figure. to do that we are going to grab that params file. rename
-is for ease. set everything and then save the new params file into the real
-one. this way everyone can have their setup just like they like it. 
 
-
-my clicking callbacks (currenly only double clicking does something) are
-not programible unless harcoded. 
-
-
-%}
 %% first load an example trials array
 
 load('C:\Users\maire\Dropbox\HIRES_LAB\PHIL\Data\Characterization\FINAL TRIAL ARRAYS\trial_array_1.mat')
 clipboard('copy', 'D:\Data\Video\PHILLIP\AH0698\170601')
 %%
-crush
-trialContactBrowserBIG_VIEW_test_shortcuts(T)
+clear all
+trialContactBrowser_V2(T)
 %%
 h = gcf;
 params2 = getappdata(h,'params')
@@ -29,6 +18,19 @@ params2 = getappdata(h,'params')
 - set the clear button 
 - set the eval statement
 %}
+%% look at all the shortcuts 
+f2 = fieldnames(params2.SC_keys);
+f2 = setdiff(f2, {'disply_key_string'});
+for kk = 1:length(f2)
+    xxxx = ['params2.SC_keys.',f2{kk}];
+    f = eval(['fieldnames(',xxxx ,');']);
+    for k = 1:length(f)
+        evl_str = ['disp(', xxxx, '.',f{k}, '.SC)'];
+        disp(['shortcut ''', f{k}, ''', is mapped to key(s) and/or mouse operations below...'])
+        eval(evl_str)
+    end
+end
+
 %% disply_key_string
 % set to 1 or zeros, this just displays the string associated with each
 % button when the user presses the button on the screen. useful for getting
@@ -46,7 +48,7 @@ setappdata(gcf, 'params', params2)% saves your settings
 % it back to false and run this section to stop displaying this 
 %{
 these are the mouse command keys, numer at the end is number of clicks
-(single vs double) and nor is left alt is right and extend is the scroll
+(single vs double) and normal is left alt is right and extend is the scroll
 wheel press button and obviously scroll_up and scroll_down 
 mouse_normal_1
 mouse_normal_2

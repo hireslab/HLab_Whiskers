@@ -31,9 +31,40 @@
 % script to do that in the 2013 MATLAB b/c I don't see any point in that.
 % ###################### below is a link to how I use undocumented matlab
 % tools to make the shortcuts work. it might break in future releases and
-% this link explains everything 
+% this link explains everything
 % https://undocumentedmatlab.com/matlab/wp-content/cache/all/articles/enabling-user-callbacks-during-zoom-pan/index.html
 % ######################
+% see file "set_custom_shortcuts_TCB.m" for examples of the shortcuts and
+% how to set them up yourself, it is pretty easy just read the that file.
+%{
+BASICS SHORTCUTS
+-double click to zoomout and then back to where you last were zoomed in to
+-b = brush toggle
+-z = zom toggle
+-1 and 2 are 'pan' left and right 1/3 of the current zoom level ( so if x
+axis is 1 to 3 then -> 3-1 = 2, 2/3 = .666, --> new position is 1.666 to
+3.666 if you hit the 2 key. used to pan across while maintaining a
+certain zoom level the entire time.
+-double clicking the right mouse will pan to the right as well!!!
+-a or left arraow goas back a trial
+-d of rightarrow or 3 key goes forward a trial
+** thes ekeep the same zoom level and start you off at the beginning of the
+trial so you can just keep on curating!!!!! should never need the zoom tool
+except at the beginning of the session.
+-scroll up and down to add or remove highlighted points
+-right click once to bring up videos (NOTE some matlabs you have to click
+**the video button to set up the viddeo directory first!!!, then this will
+work)
+-alt is save (the old way)
+-s key or clicking the scroll button (on the mouse clicking it down) activates quick
+save which has "QUICK SAVE" appended to the beginning of the the contacts
+that is saved. it will auto save in the directory matlab is in. it will
+overwrite other quicksaves that are that same session.
+ALL SHORTCUTS WORK WHILE THE BRUSH TOOL IS SELECTED SO DONT WORRY ABOUT
+EVER CHANGING IT.
+
+
+%}
 function trialContactBrowser_V2(array, contacts, params, varargin)
 % version_test = version('-release');
 % v_test = str2num(version_test(1:4))>2013;% is greater than the 2013 version this software is meant for
@@ -128,59 +159,49 @@ if nargin <4
     
     % Setup pushbuttons
     icon_cell         = {...
-    'icon_del'             , 'delete.tif', '' ;...
-    'icon_add'             , 'add.png', '' ;...
-    'icon_right'             , 'arrow-right.png', '' ;...
-    'icon_left'             , 'arrow-left.png', '' ;...
-    'icon_recalc'             , 'refresh.png', '' ;...
-    'icon_save'             , 'save.png', '' ;...
-    'icon_float'             , 'floatingBaseline.tif', '' ;...
-    'icon_floatOff'             , 'floatingBaselineOff.tif', '' ;...
-    'icon_zoomIn'             , 'arrow-down.png', '' ;...
-    'icon_zoomOut'             , 'arrow-up.png', '' ;...
-    'icon_exclude'             , 'red_flag_16.png', '' ;...
-    'icon_video'             , 'video_camera.png', '' ;... 
-    };
-% renamed the icons with a specific label ' - TCB.' (trial contact browser)
-% so that it will find the right ones. new matlab has some icons with the
-% same names on path. 
-for icon_iter = 1:length(icon_cell(:, 1))
-    t = icon_cell{icon_iter, 2};
-    icon_cell{icon_iter, 3} = [extractBefore(t, '.'), ' - TCB.', extractAfter(t, '.')];
-end
-% try to load teh news first then load the old ons if
-% it doesnt work
-trig_warning = 0;
-for icon_iter = 1:length(icon_cell(:, 1))
-    try
-        eval([icon_cell{icon_iter, 1}, '= imread(''', icon_cell{icon_iter, 3}, ''');']);
-    catch
-        trig_warning = 1;
-        eval([icon_cell{icon_iter, 1}, '= imread(''', icon_cell{icon_iter, 2}, ''');']);
+        'icon_del'             , 'delete.tif', '' ;...
+        'icon_add'             , 'add.png', '' ;...
+        'icon_right'             , 'arrow-right.png', '' ;...
+        'icon_left'             , 'arrow-left.png', '' ;...
+        'icon_recalc'             , 'refresh.png', '' ;...
+        'icon_save'             , 'save.png', '' ;...
+        'icon_float'             , 'floatingBaseline.tif', '' ;...
+        'icon_floatOff'             , 'floatingBaselineOff.tif', '' ;...
+        'icon_zoomIn'             , 'arrow-down.png', '' ;...
+        'icon_zoomOut'             , 'arrow-up.png', '' ;...
+        'icon_exclude'             , 'red_flag_16.png', '' ;...
+        'icon_video'             , 'video_camera.png', '' ;...
+        };
+    % renamed the icons with a specific label ' - TCB.' (trial contact browser)
+    % so that it will find the right ones. new matlab has some icons with the
+    % same names on path.
+    for icon_iter = 1:length(icon_cell(:, 1))
+        t = icon_cell{icon_iter, 2};
+        icon_cell{icon_iter, 3} = [extractBefore(t, '.'), ' - TCB.', extractAfter(t, '.')];
     end
-end
-
-icon_quick_save = icon_save;% make a grean version of save for quick_save function
-icon_quick_save(:, :, 3) = icon_quick_save(:, :, 3)/5;
-
-if trig_warning
-    warning('Icons need to be updated make sure to use the new icons from github with the '' - TCB.'' in the name. You can keep both copies of the icons.')
-end
-% % % % %     icon_del    = imread('delete.tif');
-% % % % %     icon_add    = imread('add.png');
-% % % % %     if size(icon_add, 3)==1%issues with tifs in 
-% % % % %         icon_add = repmat(icon_add, 1, 1, 3);
-% % % % %     end
-% % % % %     icon_right  = imread('arrow-right.png');
-% % % % %     icon_left   = imread('arrow-left.png');
-% % % % %     icon_recalc = imread('refresh.png');
-% % % % %     icon_save   = imread('save.png');
-% % % % %     icon_float  = imread('floatingBaseline.tif');
-% % % % %     icon_floatOff = imread('floatingBaselineOff.tif');
-% % % % %     icon_zoomIn = imread('arrow-down.png');
-% % % % %     icon_zoomOut= imread('arrow-up.png');
-% % % % %     icon_exclude = imread('red_flag_16.png');
-% % % % %     icon_video  = imread('video_camera.png');
+    % try to load teh news first then load the old ons if
+    % it doesnt work
+    trig_warning = 0;
+    for icon_iter = 1:length(icon_cell(:, 1))
+        try
+            eval([icon_cell{icon_iter, 1}, '= imread(''', icon_cell{icon_iter, 3}, ''');']);
+        catch
+            trig_warning = 1;
+            eval([icon_cell{icon_iter, 1}, '= imread(''', icon_cell{icon_iter, 2}, ''');']);
+        end
+    end
+    
+    icon_quick_save = icon_save;% make a grean version of save for quick_save function
+    icon_quick_save(:, :, 3) = icon_quick_save(:, :, 3)/5;
+    
+    if trig_warning
+        warning('Icons need to be updated make sure to use the new icons from github with the '' - TCB.'' in the name. You can keep both copies of the icons.')
+    end
+    
+    if size(icon_add, 3)==1%issues with reading matlab add png this way it still works
+        % but to be clear this shit is wrong need to add the new icon files
+        icon_add = repmat(icon_add, 1, 1, 3);
+    end
     
     bbutton = uipushtool(ht,'CData',icon_left,'TooltipString','Back');
     fbutton = uipushtool(ht,'CData',icon_right,'TooltipString','Forward');
@@ -383,20 +404,20 @@ else
                 display('Saved Contacts and Parameters')
                 
             case 'quick_save'
-                    assignin('base','contacts',contacts);
-                    assignin('base','params',params);
-                    quick_save_name = ['QUICK SAVED ConTA_' array.mouseName '_' array.sessionName '_' array.cellNum '_' array.cellCode];
-                    save(quick_save_name,  'contacts', 'params')
-                    fprintf(['QUICK SAVED Contacts and Parameters - REMEMBER, THIS OVERWRITES THE EXISTING FILE. \nThis file is saved with the words',...
+                assignin('base','contacts',contacts);
+                assignin('base','params',params);
+                quick_save_name = ['QUICK SAVED ConTA_' array.mouseName '_' array.sessionName '_' array.cellNum '_' array.cellCode];
+                save(quick_save_name,  'contacts', 'params')
+                fprintf(['QUICK SAVED Contacts and Parameters - REMEMBER, THIS OVERWRITES THE EXISTING FILE. \nThis file is saved with the words',...
                     '''QUICK SAVED'' appended to the beginning. \nOnce finished curating rename this file to be sure that it is not saved over next time.\n'])
-                    disp(['File was saved here aved here-> ',pwd, filesep, quick_save_name])    
+                disp(['File was saved here aved here-> ',pwd, filesep, quick_save_name])
             case 'jumpToSweep'
                 if isempty(params.trialList)
                     nsweeps = array.length;
                     params.trialList = cell(1,nsweeps);
                     for k=1:nsweeps
-                        params.tr
-                        ialList{k} = [int2str(k) ': trialNum=' int2str(params.trialNums(k))];
+                        params.trialList{k} = [int2str(k) ': trialNum=' int2str(params.trialNums(k))];
+                        
                     end
                 end
                 [selection,ok]=listdlg('PromptString','Select a sweep:','ListString',...
@@ -535,13 +556,13 @@ else
                 else
                     display('No datapoints found, please brush points before calling video')
                 end
-            case 'pass' % pass so I can have my own function without going through this like move left or right 
+            case 'pass' % pass so I can have my own function without going through this like move left or right
             otherwise
                 error('Invalid string argument.')
         end
     end
 end
-
+params = getappdata(hParamBrowserGui,'params');% update any changes to params made in the about switch/case series
 tmp_h = keep_my_selection_of_figure_tools_please(hParamBrowserGui);
 
 hParamBrowserGui = getappdata(0,'hParamBrowserGui');
@@ -763,9 +784,9 @@ else
     
     warning('off','MATLAB:modes:mode:InvalidPropertySet')
     hParamBrowserGui.KeyPressFcn = {@key_shortcuts,array, hParamBrowserGui};
-
+    
     hManager = set_mode_manager_free(hParamBrowserGui);
-
+    
     fcnList = {{@(es,ed)datamanager.brushdown(es,ed)}, {@clickcallback, array,hParamBrowserGui}};
     hParamBrowserGui.WindowButtonDownFcn = {@testwrapper, fcnList};
     
@@ -846,37 +867,6 @@ else
     text(tmax*.95,.5e-7,'Lick','FontSize',6,'color','m')
     ylabel('M0 (N*m) red=contact');
 end
-
-% Old code to call external contact summary routines, may reimplement in
-% future versions -SAH
-%
-% switch params.summarize
-%     case 'STA'
-%         params.summarize = 'off'; % switches the summarize flag off
-%         summarizeSTA(array,contacts, params);  % calls the STA summary function
-%
-%     case 'spikes'
-%         params.summarize = 'off'; % switches the summarize flag off
-%         summarizeClusts(array,contacts, params);  % calls the STA summary function
-%
-%     case 'tuning'
-%         params.summarize = 'off';
-%         summarizeTuningSi(array,contacts, params);
-%
-%     case 'contacts'
-%         params.summarize = 'off';
-%         summarizeContactsSi(array,contacts, params);
-%
-%     case 'fit'
-%         params.summarize = 'off';
-%         summarizeFit;
-%
-%     otherwise
-%
-% %        error('Invalid string argument.')
-%
-% end
-
 assignin('base','params', params);
 setappdata(hParamBrowserGui,'params', params);
 end
@@ -947,7 +937,7 @@ for FNi = 1:length(F)
     P = eval(['params.SC_keys.custom.', F{FNi}, ';']);
     if ~iscell(P.SC)
         trigON = strcmp(e.Key, P.SC);
-    else % allows cell input to map same command onto multiple keys in the same category 
+    else % allows cell input to map same command onto multiple keys in the same category
         trigON = any(cellfun(@(x) strcmp(e.Key, x), P.SC));
     end
     if trigON
@@ -965,7 +955,7 @@ for FNi = 1:length(F)
     P = eval(['params.SC_keys.built_in.', F{FNi}, ';']);
     if ~iscell(P.SC)
         trigON = strcmp(e.Key, P.SC);
-    else % allows cell input to map same command onto multiple keys in the same category 
+    else % allows cell input to map same command onto multiple keys in the same category
         trigON = any(cellfun(@(x) strcmp(e.Key, x), P.SC));
     end
     if trigON
@@ -980,7 +970,7 @@ for FNi = 1:length(F)
     P = eval(['params.SC_keys.compound.', F{FNi}, ';']);
     if ~iscell(P.SC)
         trigON = strcmp(e.Key, P.SC);
-    else % allows cell input to map same command onto multiple keys in the same category 
+    else % allows cell input to map same command onto multiple keys in the same category
         trigON = any(cellfun(@(x) strcmp(e.Key, x), P.SC));
     end
     if trigON
@@ -1001,7 +991,7 @@ end
 keep_focus(array, h)
 set_scroll_callbacks(h, array, contacts, params)
 % set up scroll wheel while brush (or anything) is selected. If user uses
-% mouse and clicks on brush or zoom etc. This will NOT WORK. 
+% mouse and clicks on brush or zoom etc. This will NOT WORK.
 
 warning('on','MATLAB:modes:mode:InvalidPropertySet')
 end
@@ -1019,7 +1009,7 @@ function set_scroll_callbacks(hfighand, array, contacts, params)
 try
     hManager = set_mode_manager_free(hfighand);
     set(hfighand, 'WindowScrollWheelFcn', {@scroll_function, array});
-% % %     set(hfighand, 'WindowScrollWheelFcn', {@scroll_function, array, contacts, params, hfighand});
+    % % %     set(hfighand, 'WindowScrollWheelFcn', {@scroll_function, array, contacts, params, hfighand});
 catch
 end
 end
@@ -1028,7 +1018,7 @@ end
 function clickcallback(obj,evt, array, h)
 persistent chk sel_type cmd_str
 d_click_time = 0.25;
-if isempty(chk) 
+if isempty(chk)
     chk = 1;
     sel_type = get(gcf,'SelectionType');
     pause(d_click_time); %Add a delay to distinguish single click from a double click
@@ -1041,9 +1031,9 @@ if isempty(chk)
 else % SET DOUBLE CLICK
     chk = 2;
     
-   pause(d_click_time)% needed for focus to be correct
-   cmd_str = ['mouse_',sel_type, '_', num2str(chk)];
-   chk = [];
+    pause(d_click_time)% needed for focus to be correct
+    cmd_str = ['mouse_',sel_type, '_', num2str(chk)];
+    chk = [];
 end
 e.Key = cmd_str;
 key_shortcuts(obj, e, array, h)
@@ -1065,8 +1055,9 @@ if all(abs(sum((currentAX - params.resetAxesTo_BIG)))<.01)
     axis(params.resetAxesTo_LAST)
 else %reset to defined big axis and save the most recent axis
     params.resetAxesTo_LAST = currentAX;
-    setappdata(h, 'params', params);
+    
     axis(params.resetAxesTo_BIG)
+    setappdata(h, 'params', params);
 end
 end
 
@@ -1106,8 +1097,8 @@ elseif nargin >= 2
     if nargin>=3
         array = varargin{2};
         keep_focus(array, fig_hand)
-
-%         fig_hand.WindowButtonDownFcn = {@clickcallback, fig_hand, params};
+        
+        %         fig_hand.WindowButtonDownFcn = {@clickcallback, fig_hand, params};
     end
     %     fig_hand.KeyPressFcn = {@key_shortcuts,array, fig_hand};
     %     %     hParamBrowserGui.WindowButtonDownFcn = {@localModeWindowButtonDownFcn}
@@ -1244,7 +1235,7 @@ end
 end
 %%
 function reset_axes_for_curating_next_trial(array)
-                % set axis back to the pole trigger time (that way we can see just
+% set axis back to the pole trigger time (that way we can see just
 % before the pole is in reach and we dont have to scroll
 
 hParamBrowserGui = getappdata(0,'hParamBrowserGui');
@@ -1583,7 +1574,7 @@ end
 %{
 these are the mouse command keys, numer at the end is number of clicks
 (single vs double) and nor is left alt is right and extend is the scroll
-wheel press button and obviously scroll_up and scroll_down 
+wheel press button and obviously scroll_up and scroll_down
 mouse_normal_1
 mouse_normal_2
 mouse_alt_1
@@ -1617,7 +1608,7 @@ custom_cell         = {...
     'adjTrials'         , 'adjTrials'         , 'I___I';...
     'jumpToSweep'       , 'jumpToSweep'       , 'I___I';...
     'videoOn'           , 'videoOn'           , 'mouse_alt_1';...
-    'move_right'        , 'pass'        , '2';...
+    'move_right'        , 'pass'        , 'set_double_key_below';...
     'move_left'         , 'pass'         , '1';...
     'toggle_axes'             , 'toggle_axes'             , 'mouse_normal_2';...
     'I___I'             , 'I___I'             , 'I___I';...
@@ -1640,9 +1631,11 @@ for ksc = 1:length(custom_cell)
     end
 end
 % add double keys
-params.SC_keys.custom.next_trial.SC = {'d', 'rightarrow'}
-params.SC_keys.custom.last_trial.SC = {'a', 'leftarrow'}
-params.SC_keys.custom.quick_save.SC = {'s', 'mouse_extend_1'}%click middle button 
+params.SC_keys.custom.next_trial.SC = {'d', 'rightarrow', '3'};
+params.SC_keys.custom.last_trial.SC = {'a', 'leftarrow'};
+params.SC_keys.custom.quick_save.SC = {'s', 'mouse_extend_1'};%click middle button
+params.SC_keys.custom.move_right.SC = {'2', 'mouse_alt_2'};%click middle button
+
 end
 
 %%
