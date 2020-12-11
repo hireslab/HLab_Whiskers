@@ -287,6 +287,9 @@ else
         switch argString
             case 'toggle_axes'
                 toggle_axes(hParamBrowserGui)
+%                 pause(0.25)
+                params = getappdata(hParamBrowserGui,'params');
+                return
             case 'next'
                 if params.sweepNum < length(array.trials)
                     params.sweepNum = params.sweepNum + 1;
@@ -296,6 +299,7 @@ else
                 end
                 if params.sweepNum == length(array.trials)
                     warning('You have reached the end of the available contact arrays') ;
+                    return
                 end
                 
                 %                 reset_axes(params);
@@ -338,7 +342,18 @@ else
                 params.xlim =  get(hs_1,'xlim');
                 params.ylim =  get(hs_1,'ylim');
                 
-                
+                time=array.trials{params.sweepNum}.whiskerTrial.time{1}; % All times in current trial
+                cW=array.trials{params.sweepNum}.whiskerTrial;
+                set(findobj('Tag','t_d'),'BrushData', []) %clear selection 
+                try
+                    [~, keep_inds, ~] = intersect(time, params.red_dots{2}.XData);
+                    keep_inds = unique([keep_inds(:); toAdd(:)]);
+                    set(params.red_dots{2}, 'XData', cW.time{1}(keep_inds), 'YData', cW.distanceToPoleCenter{1}(keep_inds))
+                    set(params.red_dots{3}, 'XData', cW.time{1}(keep_inds), 'YData', cW.deltaKappa{1}(keep_inds))
+                    set(params.red_dots{4}, 'XData', cW.time{1}(keep_inds), 'YData',cW.M0{1}(keep_inds))
+                    return
+                catch 
+                end
             case 'del'
                 
                 toDel = [];
@@ -364,6 +379,17 @@ else
                 params.xlim =  get(hs_1,'xlim');
                 params.ylim =  get(hs_1,'ylim');
                 
+                time=array.trials{params.sweepNum}.whiskerTrial.time{1}; % All times in current trial
+                cW=array.trials{params.sweepNum}.whiskerTrial;
+                set(findobj('Tag','t_d'),'BrushData', []) %clear selection 
+                try                    
+                    [~, keep_inds] = setdiff(params.red_dots{2}.XData, time(toDel));
+                    set(params.red_dots{2}, 'XData', cW.time{1}(keep_inds), 'YData', cW.distanceToPoleCenter{1}(keep_inds))
+                    set(params.red_dots{3}, 'XData', cW.time{1}(keep_inds), 'YData', cW.deltaKappa{1}(keep_inds))
+                    set(params.red_dots{4}, 'XData', cW.time{1}(keep_inds), 'YData',cW.M0{1}(keep_inds))
+                    return
+                catch 
+                end
             case 'recalc'
                 [contacts params] = autoContactAnalyzerSi(array, params, contacts, 'recalc');
                 set(0,'CurrentFigure',hParamBrowserGui);
@@ -411,6 +437,7 @@ else
                 fprintf(['QUICK SAVED Contacts and Parameters - REMEMBER, THIS OVERWRITES THE EXISTING FILE. \nThis file is saved with the words',...
                     '''QUICK SAVED'' appended to the beginning. \nOnce finished curating rename this file to be sure that it is not saved over next time.\n'])
                 disp(['File was saved here aved here-> ',pwd, filesep, quick_save_name])
+                return
             case 'jumpToSweep'
                 if isempty(params.trialList)
                     nsweeps = array.length;
@@ -424,6 +451,27 @@ else
                     params.trialList,'SelectionMode','single');
                 if ~isempty(selection) && ok==1
                     params.sweepNum = selection;
+                end
+                 if params.sweepNum < length(array.trials)
+                    trig_on = 0;
+                    while isempty(array.trials{params.sweepNum}.whiskerTrial) && params.sweepNum < length(array.trials)
+                        trig_on = 1;
+                        params.sweepNum = params.sweepNum + 1;
+                    end
+                    if trig_on
+                       warning('select trial nor earlier trials exist, reverting back to earliest trial') 
+                    end
+                end
+                if params.sweepNum == length(array.trials)
+                    trig_on = 0;
+                    while isempty(array.trials{params.sweepNum}.whiskerTrial) && params.sweepNum > 0
+                        trig_on = 1;
+                        params.sweepNum = params.sweepNum - 1;
+                    end
+                    if trig_on
+                    warning(['reverting back to the last trial which is trial ', num2str(params.sweepNum)])
+                    end
+                    warning('You have reached the end of the available contact arrays') ;
                 end
                 
             case 'adjPlots'
@@ -556,13 +604,15 @@ else
                 else
                     display('No datapoints found, please brush points before calling video')
                 end
+                set(findobj('Tag','t_d'),'BrushData', []) %clear selection 
             case 'pass' % pass so I can have my own function without going through this like move left or right
+                test1 = 1
+                return
             otherwise
                 error('Invalid string argument.')
         end
     end
 end
-params = getappdata(hParamBrowserGui,'params');% update any changes to params made in the about switch/case series
 tmp_h = keep_my_selection_of_figure_tools_please(hParamBrowserGui);
 
 hParamBrowserGui = getappdata(0,'hParamBrowserGui');
@@ -607,6 +657,7 @@ end
 
 % Shorthand notation
 %#here
+
 time=array.trials{params.sweepNum}.whiskerTrial.time{1}; % All times in current trial
 cT=array.trials{params.sweepNum};
 cW=array.trials{params.sweepNum}.whiskerTrial;
@@ -693,19 +744,7 @@ if isempty(cW)==1
     subplot('Position', position);
     text(0,0,'Whisker Data Missing for Trial');
 else
-    
-    
-    %     for i=1:length(cS.clustData)
-    %     try
-    %         spikeIndex{i}(cS.clustData{i}.spikeTimes)=1;
-    %     end
-    %
-    %     spikeRate{i}=smooth(spikeIndex{i},params.spikeRateWindow*sampleRate)*sampleRate;
-    %
-    %     spikeRateUsed{i}=spikeRate{i}(params.framesUsed*10+round((array.whiskerTrialTimeOffset+params.spikeSynapticOffset)*sampleRate));
-    %     end
-    
-    
+
     params.cropind=[];   cind=[];   y1=[];   x1=[];    y2=[];   x2=[];
     params.cropind=find(cW.time{1} > params.poleOffset+cB.pinDescentOnsetTime & cW.time{1} < params.poleEndOffset+cB.pinAscentOnsetTime);
     cind=contacts{params.sweepNum}.contactInds{1};%set inds to plot red dots for touch times
@@ -726,7 +765,7 @@ else
     plot(x1,y1,'.k','Tag','t_cvd'); hold on
     axis([min(x1)-.02 max(x1)+.02 min(y1)-.3 max(y1)+1])
     
-    plot(x2,y2,'.r');
+    params.red_dots{1} = plot(x2,y2,'.r');
     %     title('Contact Parameters')
     axis tight
     %     xlabel('Curvature (\kappa)')
@@ -767,11 +806,16 @@ else
     X_ax_set = ca_tmp.XLim;
     Y_ax_set = ca_tmp.YLim;
     hold off;
+% %     tmp1 = gca;
+%     hold(gca,'on');
+%     
+%     hold(handles.axes1,'on');
+    axis('manual')
     plot(cW.time{1},cW.distanceToPoleCenter{1},'.-k','Tag','t_d')
     hold on
     
     ylim(Y_ax_set)
-    plot(cW.time{1}(cind),cW.distanceToPoleCenter{1}(cind),'.r')
+    params.red_dots{2} = plot(cW.time{1}(cind),cW.distanceToPoleCenter{1}(cind),'.r');
     
     title(strcat('Distance to pole center #',...
         num2str(params.trialNums(params.sweepNum))),'FontSize',10)
@@ -801,7 +845,7 @@ else
     plot(cW.time{1},cW.deltaKappa{1},'.-k')
     hold on
     
-    plot(cW.time{1}(cind),cW.deltaKappa{1}(cind),'.r')
+    params.red_dots{3} = plot(cW.time{1}(cind),cW.deltaKappa{1}(cind),'.r');
     title(strcat('Change in curvature #',num2str(params.trialNums(params.sweepNum))))
     ylabel('Curvature (K)');
     hold on;
@@ -819,18 +863,23 @@ else
     %     set(gca,'YLim', [-5 5]*1e-7,'Color','k');
     title(strcat('Forces associated with trial #',num2str(params.trialNums(params.sweepNum))))
     
-    linkaxes([hs_1 hs_3 hs_4],'x');
+    %     linkaxes([hs_1 hs_3 hs_4],'x');
+    allAxes = findobj(gcf,'Type','axes','Visible','on');
+    try
+        linkaxes(allAxes,'x')
+    catch
+    end
     %     set(hs_1,'XLim',current_x,'YLim',current_y);
     xlim(X_ax_set)
     if ~isfield(params,'floatingBaseline')
         plot(array.trials{params.sweepNum}.whiskerTrial.time{1},contacts{params.sweepNum}.M0combo{1},'-w.','MarkerSize',6)
-        plot(array.trials{params.sweepNum}.whiskerTrial.time{1}(cind),cW.M0{1}(cind),'r.','MarkerSize',8)
+        params.red_dots{4} = plot(array.trials{params.sweepNum}.whiskerTrial.time{1}(cind),cW.M0{1}(cind),'r.','MarkerSize',8);
     elseif ~params.floatingBaseline
         plot(array.trials{params.sweepNum}.whiskerTrial.time{1},contacts{params.sweepNum}.M0combo{1},'-w.','MarkerSize',6)
-        plot(array.trials{params.sweepNum}.whiskerTrial.time{1}(cind),cW.M0{1}(cind),'r.','MarkerSize',8)
+        params.red_dots{4} = plot(array.trials{params.sweepNum}.whiskerTrial.time{1}(cind),cW.M0{1}(cind),'r.','MarkerSize',8);
     elseif params.floatingBaseline
         plot(array.trials{params.sweepNum}.whiskerTrial.time{1},contacts{params.sweepNum}.M0comboAdj{1},'-w.','MarkerSize',6)
-        plot(array.trials{params.sweepNum}.whiskerTrial.time{1}(cind),contacts{params.sweepNum}.M0comboAdj{1}(cind),'r.','MarkerSize',8)
+        params.red_dots{4} = plot(array.trials{params.sweepNum}.whiskerTrial.time{1}(cind),contacts{params.sweepNum}.M0comboAdj{1}(cind),'r.','MarkerSize',8);
     else
     end
     % Plot silicon probe spikes if present
@@ -888,6 +937,7 @@ if evt.EventName== 'WindowScrollWheel'
     fcnList = {{@(es,ed)datamanager.brushdown(es,ed)}, {@clickcallback, array, hObj}};
     hObj.WindowButtonDownFcn = {@testwrapper, fcnList};
     set_scroll_callbacks(hObj, array, contacts, params)
+    
 end
 end
 %%
@@ -906,6 +956,9 @@ params = getappdata(ObjH,'params');
 % % % % fcnList = {{@(es,ed)datamanager.brushdown(es,ed)}, {@clickcallback, array, ObjH}};
 % % % % hManager.CurrentMode.WindowButtonDownFcn = {@testwrapper, fcnList};
 ObjH.WindowButtonDownFcn = {@testwrapper, fcnList};
+contacts = getappdata(getappdata(0,'hParamBrowserGui'),'contacts');% maybe change to hObj
+array = fcnList{2}{2};
+set_scroll_callbacks(ObjH, array, contacts, params)
 end
 
 %%
@@ -921,6 +974,7 @@ end
 
 %%
 function key_shortcuts(src, e, array, h)
+trig_cmd_list = {};
 
 warning('off','MATLAB:modes:mode:InvalidPropertySet')
 contacts = getappdata(getappdata(0,'hParamBrowserGui'),'contacts');
@@ -942,6 +996,7 @@ for FNi = 1:length(F)
     end
     if trigON
         eval(P.cmd);
+        trig_cmd_list{end+1} = F{FNi};
         %was going to put a break here but this could actually be useful
         %like for example if you want to combine the next trial with brush
         %on command in one this could be useful. or close video combined
@@ -960,6 +1015,7 @@ for FNi = 1:length(F)
     end
     if trigON
         eval(P.cmd);
+        trig_cmd_list{end+1} = F{FNi};
     end
 end
 %%%%%
@@ -975,25 +1031,37 @@ for FNi = 1:length(F)
     end
     if trigON
         eval(P.cmd);
+        trig_cmd_list{end+1} = F{FNi};
     end
 end
 %%%%%
 switch e.Key
     case params.SC_keys.custom.move_right.SC
-        disp(1)
         ha.XLim = ha.XLim + diff(ha.XLim)./3;
     case params.SC_keys.custom.move_left.SC
-        disp(2)
         ha.XLim = ha.XLim - diff(ha.XLim)./3;
-        
+end
+allAxes = findobj(gcf,'Type','axes','Visible','on');
+try
+    linkaxes(allAxes,'x')
+catch
 end
 % setappdata(h, 'params', params);
 keep_focus(array, h)
 set_scroll_callbacks(h, array, contacts, params)
 % set up scroll wheel while brush (or anything) is selected. If user uses
-% mouse and clicks on brush or zoom etc. This will NOT WORK.
+% mouse and clicks on brush or zoom etc. This will NOT WORK. must use
+% shortcuts instead.
 
-warning('on','MATLAB:modes:mode:InvalidPropertySet')
+hManager = set_mode_manager_free(h);%allow us to set our own callbacks
+set_click_test = [];
+for testturn = 1:length(trig_cmd_list)%dont set for these keys 
+    set_click_test(end+1) = any(strcmp(trig_cmd_list{testturn}, {'zoom_on';'zoom_off';'zoom_toggle';'pan_on';'pan_off';'pan_toggle'}));
+end
+if ~any(set_click_test)
+    fcnList = {{@(es,ed)datamanager.brushdown(es,ed)}, {@clickcallback, array, h}};
+    h.WindowButtonDownFcn = {@testwrapper, fcnList};
+end
 end
 %%
 function keep_focus(array, h2)
@@ -1031,7 +1099,7 @@ if isempty(chk)
 else % SET DOUBLE CLICK
     chk = 2;
     
-    pause(d_click_time)% needed for focus to be correct
+%     pause(d_click_time)% needed for focus to be correctb
     cmd_str = ['mouse_',sel_type, '_', num2str(chk)];
     chk = [];
 end
